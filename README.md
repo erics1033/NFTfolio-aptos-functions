@@ -1,5 +1,5 @@
 # NFTfolio-aptos-functions
-This contains the Aptos back-end functions used to aggregate and fetch NFT data.
+This repository contains the Aptos back-end functions used to aggregate and fetch NFT collections data.
 
 
 ## Branching
