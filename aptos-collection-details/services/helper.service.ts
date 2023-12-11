@@ -107,3 +107,33 @@ export async function getNftImageFromMetadataUri(metadataUriPath: string) {
     return null;
   }
 }
+
+
+
+/**
+ * Used to get an Aptos NFT collection's via creator address
+ * @param {string} creatorAddress - verified creator address
+ * @return {any} slug string|null
+ */
+export async function getAptosCollectionSlug(creatorAddress: string | null) {
+  try {
+    if (!creatorAddress) return null;
+
+    // Note: replace this with your own DB to fetch the Aptos NFT collection 
+    const queryResult = await createCollectionInstance(
+      COLLECTION_NAMES.TOP_COLLECTIONS
+    )
+      .where('verified_creator_address', '==', creatorAddress)
+      .limit(1)
+      .get();
+
+    if (queryResult?.size == 0) {
+      return null;
+    } else {
+      return queryResult?.docs[0]?.data()?.slug;
+    }
+  } catch (error) {
+    errorLog(`getAptosCollectionSlug ${creatorAddress} - error: `, error);
+    return null;
+  }
+}

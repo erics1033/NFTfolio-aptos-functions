@@ -180,6 +180,73 @@ export function fetchAptosUniqueOwners(verifiedCreatorAddress: string) {
 }
 
 /**
+ * Takes in APT wallet address and returns wallet's NFTs
+ * @param {string} wallet user's wallet address
+ * @param {numbre} offset - whether to paginate
+ * @return {number | null} APT balance
+ */
+export const getAptWalletNfts = async (
+  wallet: string,
+  offset = 0
+): Promise<any[] | null> => {
+  const operationGetAptWalletNfts = `
+  query MyQuery {
+     current_token_ownerships_v2(
+         where: {owner_address: {_eq: "${wallet}"}, _and: {amount: {_eq: "1"}}}
+         limit: 50
+         offset: ${offset}
+       ) {
+         current_token_data {
+           token_name
+           token_uri
+           is_fungible_v2
+           current_collection {
+             collection_name
+             creator_address
+           }
+           token_data_id
+         }
+         amount
+       }
+    }
+`;
+  const response = await fetchGraphQL(operationGetAptWalletNfts, 'MyQuery', {});
+  return response;
+};
+
+/**
+ * Takes in APT wallet address and returns wallet balance
+ * @param {string} wallet user's wallet address
+ * @return {number | null} APT balance
+ */
+export const getAptBalance = async (wallet: string): Promise<number | null> => {
+  const operationGetAptBalance = `
+  query MyQuery {
+    coin_balances(
+      limit: 1
+      where: {owner_address: {_eq: "${wallet}"}, _and: {coin_type: {_eq: "0x1::aptos_coin::AptosCoin"}}}
+      order_by: {transaction_version: desc}
+    ) {
+      amount
+    }
+  }
+`;
+  const response = await fetchGraphQL(operationGetAptBalance, 'MyQuery', {});
+
+  if (response?.data && response?.data?.coin_balances.length > 0) {
+    let value = response?.data?.coin_balances[0]?.amount || null;
+
+    if (value) {
+      value = Number((Number(value) / 100000000)?.toFixed(5));
+    }
+
+    return value;
+  } else {
+    return null;
+  }
+};
+
+/**
  * GraphQL call to fetch on-chain Aptos data
  * @param {any} operationsDoc query name
  * @param {any} operationName operation name
